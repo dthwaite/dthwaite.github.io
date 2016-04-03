@@ -43,8 +43,8 @@
 
 
     <section>
-        <article><h2>TPA - Total Precision Arithmetic</h2><p><a href="http://travis-ci.org/dthwaite/TPA"><img src="https://secure.travis-ci.org/dthwaite/TPA.png" alt="Build Status"></a></p>
-<h5>tpa.js performs basic arithmetic operations with total precision.</h5><p>Available on <a href="https://github.com/dthwaite/TPA">GitHub</a>, details on <a href="http://dthwaite.github.io/tpa/docs/">JsDocs</a>. See it working: <a href="http://dthwaite.github.io/tpa/">Demonstration</a></p>
+        <article><h2>TPA - Total Precision Arithmetic</h2><p><a href="https://www.npmjs.com/package/TPA"><img src="https://img.shields.io/npm/v/npm.svg" alt="npm"></a><br><a href="http://travis-ci.org/dthwaite/TPA"><img src="https://secure.travis-ci.org/dthwaite/TPA.png" alt="Build Status"></a><br><a href="https://coveralls.io/github/dthwaite/TPA?branch=master"><img src="https://coveralls.io/repos/github/dthwaite/TPA/badge.svg?branch=master" alt="Coverage Status"></a><br><a href="https://www.bithound.io/github/dthwaite/TPA"><img src="https://www.bithound.io/github/dthwaite/TPA/badges/score.svg" alt="bitHound Overall Score"></a><br><a href="https://www.bithound.io/github/dthwaite/TPA"><img src="https://www.bithound.io/github/dthwaite/TPA/badges/code.svg" alt="bitHound Code"></a></p>
+<h5>tpa.js performs basic arithmetic operations with total precision.</h5><p>Available on <a href="https://github.com/dthwaite/TPA">GitHub</a>, details on <a href="http://dthwaite.github.io/tpa/docs/">JSDocs</a>. See it working: <a href="http://dthwaite.github.io/tpa/">Demonstration</a></p>
 <p>The main features are:</p>
 <ul>
 <li>Simplicity - one library, add/subtract/multiply/divide</li>
@@ -57,12 +57,13 @@
 <p>There are many similar libraries available. I wrote this one partly as an exercise. But I also wrote it because it achieves all the features listed above as well as, or considerably better (IMHO ;-), than the others.</p>
 <p>Installation:<br><code>npm install</code></p>
 <p>Test:<br><code>npm test</code></p>
+<p>Coverage:<br><code>npm run coverage</code><br><code>open coverage/lcov-report/index.html</code></p>
 <p>To use in Node:</p>
 <pre class="prettyprint source lang-javascript"><code>var Tpa = require('Tpa');
 
 var n=new Tpa(100.123);
 console.log(n.toString()); // Outputs '123.123'</code></pre><p>To use in the browser:</p>
-<pre class="prettyprint source lang-javascript"><code>&lt;script src =&quot;https://cdn.rawgit.com/dthwaite/TPA/master/lib/tpa.min.js&quot;>&lt;/script>
+<pre class="prettyprint source lang-javascript"><code>&lt;script src =&quot;https://cdn.rawgit.com/dthwaite/TPA/V1.0.1/lib/tpa.min.js&quot;>&lt;/script>
 &lt;script>
 var n=new Tpa(100.123);
 console.log(n.toString()); // Outputs '123.123'
@@ -117,7 +118,7 @@ var d=new Tpa(b,true);                      // Explicitly set d to be integer
 console.log(d.toString());                  // '7' (d was constructed to ignore any fractional part)
 var e=new Tpa('23 100/23',true);            // Explicitly set e to be integer
 console.log(e.value());                     // 27 (e took on the integer evaluation of the initialising string)
-console.log(e.set(3,false));                // Sets an existing number tto a new value and to be fractional</code></pre><p>You can find out what type a number is with the <code>isInteger()</code> and <code>isFractional()</code> methods and you can convert a number to one or other representation with the <code>makeInteger()</code> and <code>makeFractional()</code> methods:</p>
+console.log(e.set(3,false).value());        // Sets an existing number to a new value and to be fractional</code></pre><p>You can find out what type a number is with the <code>isInteger()</code> and <code>isFractional()</code> methods and you can convert a number to one or other representation with the <code>makeInteger()</code> and <code>makeFractional()</code> methods:</p>
 <pre class="prettyprint source lang-javascript"><code>var a=new Tpa('33 2/3');
 console.log(a.isInteger());                 // false
 console.log(a.makeInteger().value());       // 33
@@ -159,21 +160,21 @@ console.log(d.eq(c));               // true</code></pre><h4>Other methods</h4><u
 <li><code>hasFraction()</code> return true if the number has a non zero fractional part</li>
 <li><code>frac()</code> removes the integer value from the number</li>
 <li><code>int()</code> removes the fractional value from the number</li>
-<li><code>mod()</code> set this number to the modulus of the number passed in</li>
+<li><code>modulus()</code> set this number to the modulus of the number passed in</li>
 <li><code>abs()</code> set this number to its absolute value</li>
 </ul>
 <pre class="prettyprint source lang-javascript"><code>console.log(Tpa(-3).sign());                        // -1
 console.log(Tpa(3.3).hasFraction());                // true
 console.log(Tpa('-3 1/3').frac().toFraction());     // '-0 1/3'
 console.log(Tpa('-3 1/3').int().toFraction());      // '-3'
-console.log(Tpa(22).mod(3).toString());             // '1'
+console.log(Tpa(22).modulus(3).toString());             // '1'
 console.log(Tpa(-33.5).abs().value());              // 33.5</code></pre><h4>Static methods</h4><p>Typically the arithmetical operations change the number on which they are called. Alternatively you can choose to not mutate existing numbers to return a new number which is the result of the operation. This is achieved with static functions as follows:</p>
 <ul>
 <li><code>Tpa.add(a,b)</code> adds a and b and returns the result in a new number (aliases: <code>plus()</code>)</li>
 <li><code>Tpa.subtract(a,b)</code> subtracts b from a and returns the result in a new number (aliases: <code>sub()</code> &amp; <code>minus()</code>)</li>
 <li><code>Tpa.multiply(a,b)</code> multiplies two numbers and returns the result in a new number (aliases: <code>times()</code> &amp; <code>mult()</code>)</li>
 <li><code>Tpa.divide(a,b)</code> divides a by b and returns the result in a new number (aliases: <code>div()</code>)</li>
-<li><code>Tpa.mod(a,b)</code> performs a mod b and returns the result in a new number</li>
+<li><code>Tpa.modulus(a,b)</code> performs a modulus b and returns the result in a new number (aliases: <code>mod()</code>)</li>
 <li><code>Tpa.frac(a)</code> takes the fractional part of a and returns it in a new number</li>
 <li><code>Tpa.int(a)</code> takes the integer part of a and returns it in a new number</li>
 <li><code>Tpa.abs(a)</code> takes the absolute value of a and returns it in a new number</li>
@@ -184,7 +185,7 @@ console.log(Tpa.add(a,b).value());        // 17
 console.log(Tpa.subtract(a,b).value());   // -7
 console.log(Tpa.multiply(a,b).value());   // 60
 console.log(Tpa.divide(b,a).toFraction());// '2 25/50'
-console.log(Tpa.mod(a,b).value());        // 5
+console.log(Tpa.modulus(a,b).value());        // 5
 console.log(Tpa.frac(b).value());         // 0.5
 console.log(Tpa.int(b).value());          // 12
 console.log(Tpa.abs(-23).value());        // 23</code></pre><p>Note that for methods that take two arguments the first one dictates whether the result is integer or fractional. Thus the subtraction of 12.5 from 5 yields 7 as the operation is only working on integer parts. As opposed to the division that takes the type of b which is fractional.</p>
@@ -237,7 +238,7 @@ console.log(Tpa.abs(-23).value());        // 23</code></pre><p>Note that for met
 <li><code>subtract()</code> or <code>sub()</code> or <code>minus()</code></li>
 <li><code>multiply()</code> or <code>mult()</code> or <code>times()</code></li>
 <li><code>divide()</code> or <code>div()</code></li>
-<li><code>mod()</code></li>
+<li><code>modulus()</code> or <code>mod()</code></li>
 </ul>
 </li>
 </ul>
@@ -307,7 +308,7 @@ x.divide(y);             // Returns x having been divided by y, only y remains u
 
     
     <dt class="tag-version">Version:</dt>
-    <dd class="tag-version"><ul class="dummy"><li>1.0.0</li></ul></dd>
+    <dd class="tag-version"><ul class="dummy"><li>1.0.6</li></ul></dd>
     
 
     
@@ -394,7 +395,7 @@ x.divide(y);             // Returns x having been divided by y, only y remains u
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Apr 01 2016 14:13:00 GMT+0100 (BST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Apr 03 2016 22:20:42 GMT+0100 (BST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -30,8 +30,9 @@
  * @file The complete code for Total Precision Arithmetic
  * @author Dominic Thwaites
  * @copyright (c) 2016 Dominic Thwaites dominicthwaites@mac.com
- * @version 1.0.0
+ * @version 1.0.6
  */
+
 !(/** @lends DJT*/function() {
 
     var INPUT_ERROR_MESSAGE='Number initialisation parameter badly formed';
@@ -44,7 +45,7 @@
     /**
      * Tpa stores and manipulates rational numbers with total precision
      *
-     * @param {number|string|DJT~Tpa} [initial-value] Initial value to set this number.
+     * @param {number|string|DJT~Tpa} [initialValue] Initial value to set this number.
      * 1. Numeric values are only represented to a precision of 8 decimal places and, in any case, are limited by the precision of a JS floating point number. To initialse a number with definite accuracy the string form is recommended.
      * 2. String values can be represented in decimal or fractional form.
      *   * Decimal form: `&lt;+/->iii.ddd[rrr]` where `+/-` is optional, `iii` represents the integer part and `ddd` the decimal part with `[rrr]` representing an optional recurring decimal part
@@ -52,11 +53,10 @@
      * 3. Tpa instance causes this constructor to return a copy of it.
      *
      * Tpa may be called statically, in which case a new instance is still returned.
-     * __Note well:__ If initial-value is itself a Tpa, then the same Tpa is returned *without* making a copy when called statically.
-     * @param {boolean} [is-integer=true] Set to `false` to enable this number to represent fractions.
-     * If the initial-value is fractional in any way then is-integer will default to `false`.
-     * The initial setting of this number (integer or fractional) is always kept throughout its life unless
-     * the Tpa~makeFraction or Tpa~makeInteger methods are called to change it.
+     * __Note well:__ If initialValue is itself a Tpa, then the same Tpa is returned *without* making a copy when called statically.
+     * @param {boolean} [isInteger=true] Set to `false` to enable this number to represent fractions.
+     * If the initialValue is fractional in any way then isInteger will default to `false`.
+     * The initial setting of this number (integer or fractional) is always kept throughout its life unless the Tpa~makeFraction or Tpa~makeInteger methods are called to change it.
      *
      * @example
      * var a=new Tpa();                 // Creates a new number set to zero
@@ -213,14 +213,6 @@
         };
 
         /**
-         * @returns {number} 0 if number is zero, -1 if negative, +1 if positive
-         */
-        N.prototype.sign=function() {
-            if (this.isZero()) return 0;
-            return this.isNegative() ? -1 : 1;
-        };
-
-        /**
          * @returns {number} The least significant digit of the number or 0 if zero
          */
         N.prototype.lsb=function() {
@@ -374,8 +366,7 @@
          * @return {Tpa~N} This number for chaining purposes
          */
         N.prototype.multiply=function(number) {
-            if (number.safemaximum>=BASE) number.normalise();
-            if (this.safemaximum>=BASE) this.normalise();
+
             if (number.digits.length==0 || this.digits.length==0) return this.reset();
             if (number.digits.length==1) {
                 var m=number.digits[0];
@@ -386,7 +377,8 @@
                 else this._digitMultiplyWithAdd(m,0);
                 return this;
             }
-
+            if (number.safemaximum>=BASE) number.normalise();
+            if (this.safemaximum>=BASE) this.normalise();
             var operand=number.digits;
             var original=this.digits;
             this.digits=new Array(original.length+operand.length-1);
@@ -424,7 +416,7 @@
                 this.digits[i]=Math.trunc(Math.random() * BASE);
                 digits -= digitsPerElement;
             }
-            this.digits[i]=(1+Math.trunc(Math.random() * Math.pow(10, digits)));
+            this.digits[i]=Math.trunc((1+Math.random()) * Math.pow(10, digits));
             this.safemaximum=BASE-1;
             return this;
         };
@@ -699,21 +691,21 @@
             // call it will be returned with creating a new copy - so long as the type is the same (integer or not)
             if (initial instanceof Tpa &amp;&amp; (typeof integer != 'boolean' || integer == initial.integer)) return initial;
             switch (arguments.length) {
-                case 0:
-                    return new Tpa();
-                case 1:
-                    return new Tpa(initial);
-                default:
-                    return new Tpa(initial, integer);
+            case 0:
+                return new Tpa();
+            case 1:
+                return new Tpa(initial);
+            default:
+                return new Tpa(initial, integer);
             }
         }
         switch (arguments.length) {
-            case 0:
-                return this.set();
-            case 1:
-                return this.set(initial);
-            default:
-                return this.set(initial, integer);
+        case 0:
+            return this.set();
+        case 1:
+            return this.set(initial);
+        default:
+            return this.set(initial, integer);
         }
     }
 
@@ -722,8 +714,8 @@
      *
      * Parameters passed are exactly those expected for construction of a new Tpa
      *
-     * @param {number|string|DJT~Tpa} [initial-value] Initial value to set this number.
-     * @param {boolean} [is-integer=true] Set to `false` to enable this number to represent fractions.
+     * @param {number|string|DJT~Tpa} [initialValue] Initial value to set this number.
+     * @param {boolean} [isInteger=true] Set to `false` to enable this number to represent fractions.
      * @return {Tpa} this number for chaining purposes
      */
     Tpa.prototype.set=function(initial,integer) {
@@ -1088,7 +1080,7 @@
      * @param {Tpa|number|string} b Second number
      * @returns {Tpa} a mod b
      */
-    Tpa.mod=function(a,b) {
+    Tpa.modulus=function(a,b) {
         return new Tpa(a).mod(b);
     };
 
@@ -1138,7 +1130,6 @@
         var result = compare(this.number,number.number);
         if (result == 0 &amp;&amp; this.isFractional()) {
             if (number.isFractional()) result=compare(new N(this.remainder.numerator).multiply(number.remainder.denominator),new N(this.remainder.denominator).multiply(number.remainder.numerator));
-            else if (!this.remainder.numerator.isZero()) result=1;
         }
         return result;
     };
@@ -1267,7 +1258,7 @@
      * @param {Tpa|number|string} number The divisor number
      * @returns {Tpa} This number for chaining purposes
      */
-    Tpa.prototype.mod=function(number) {
+    Tpa.prototype.modulus=function(number) {
         if (!(number instanceof TPA)) number=Tpa(number);
         this.number=this.number.divide(number.number);
         if (!this.integer) this.remainder=standardRemainder();
@@ -1433,8 +1424,11 @@
     Tpa.prototype.mult=Tpa.prototype.multiply;
     Tpa.div=Tpa.divide;
     Tpa.prototype.div=Tpa.prototype.divide;
+    Tpa.mod=Tpa.modulus;
+    Tpa.prototype.mod=Tpa.prototype.modulus;
 
     // CommonJS
+    /*global define*/
     if (typeof exports === 'object' &amp;&amp; typeof module !== 'undefined') {
         module.exports = Tpa;
     } else if (typeof define === 'function' &amp;&amp; define.amd) {
@@ -1459,7 +1453,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Apr 01 2016 14:13:00 GMT+0100 (BST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Apr 03 2016 22:20:42 GMT+0100 (BST)
 </footer>
 
 <script> prettyPrint(); </script>
