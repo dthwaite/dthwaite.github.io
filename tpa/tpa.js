@@ -69,6 +69,7 @@ $(function() {
         }
     }).on('click','.simplify-button',function(event) {
         var row=$(this).parents('.tpa-display');
+        row.find('.error-line').hide();
         var tpa=row.data('tpa');
         row.find('.tpa-simplify').text('='+tpa.simplify(0));
         row.find('.tpa-fraction').val(tpa.toFraction());
@@ -81,17 +82,24 @@ $(function() {
         displayValue(row);
     }).on('click','.unary-ops',function(event) {
         var row=$(this).parents('.tpa-display');
+        row.find('.error-line').hide();
         var tpa=row.data('tpa');
         var func=$(event.target).attr('data-function');
         tpa[func]();
         displayValue(row);
     }).on('click','.binary-ops',function(event) {
         var row=$(this).parents('.tpa-display');
+        row.find('.error-line').hide();
         var tpa=row.data('tpa');
         row.next('.tpa-display').each(function() {
             var tpa2=$(this).data('tpa');
             var func=$(event.target).attr('data-function');
-            tpa[func](tpa2);
+            try {
+                tpa[func](tpa2);
+            } catch (error) {
+                row.find('.error-line span').text(error.message);
+                row.find('.error-line').show();
+            }
         });
         displayValue(row);
     }).on('click','.remove-tpa',function(event) {
