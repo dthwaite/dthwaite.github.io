@@ -49,28 +49,47 @@
 <p>The main features are:</p>
 <ul>
 <li>Simplicity - one library, add/subtract/multiply/divide</li>
-<li>Performance - optimised to perform operations reasonably fast</li>
+<li>Performance - optimised to perform operations reasonably fast (see below)</li>
 <li>Limitless - represents and operates on rational numbers of any size and precision</li>
 <li>Expressive - inputs/outputs numbers using decimal or fractional forms</li>
 <li>Quality - comprehensively tested and documented</li>
 </ul>
 <p>For a terse list of methods go to the end of this readme. The usage section below is more descriptive.</p>
 <p>There are many similar libraries available. I wrote this more as an exercise than anything else. Enjoy. </p>
-<p>Installation:<br><code>npm install</code></p>
-<p>Test:<br><code>npm test</code></p>
-<p>Coverage:<br><code>npm run coverage</code> then <code>open coverage/lcov-report/index.html</code></p>
-<p>Lint:<br><code>npm run lint</code></p>
-<p>Use it:<br><code>npm docs</code></p>
-<p>To use in Node:</p>
+<h5>Node.js:</h5><p>To install it:<br><code>npm install TPA</code></p>
+<p>To see how to use it:<br><code>npm docs TPA</code></p>
+<p>To code with it:</p>
 <pre class="prettyprint source lang-javascript"><code>var Tpa = require('Tpa');
 
-var n=new Tpa(100.123);
-console.log(n.toString()); // Outputs '123.123'</code></pre><p>To use in the browser:</p>
-<pre class="prettyprint source lang-javascript"><code>&lt;script src =&quot;https://cdn.rawgit.com/dthwaite/TPA/V1.0.1/lib/tpa.min.js&quot;>&lt;/script>
+var n=new Tpa('3 1/3');
+console.log(n.toString()); // Outputs '3.[3]'</code></pre><h5>Browser:</h5><p>To install it:</p>
+<ul>
+<li>Download <code>lib/tpa.min.js</code> from my latest version on GitHub or use their CDN: 'https://cdn.rawgit.com/dthwaite/TPA/v1.0.12/lib/tpa.min.js'</li>
+<li><code>tpa.min.js</code> is a UMD bundle with an export name of <code>Tpa</code></li>
+</ul>
+<p>To see how to use it:</p>
+<http://dthwaite.github.io/tpa/>
+
+<p>To code with it:</p>
+<pre class="prettyprint source lang-javascript"><code>&lt;script src =&quot;tpa.min.js&quot;>&lt;/script>
 &lt;script>
-var n=new Tpa(100.123);
-console.log(n.toString()); // Outputs '123.123'
-&lt;/script></code></pre><h3>Usage</h3><h4>Set up</h4><pre class="prettyprint source lang-javascript"><code>var n1=new Tpa();                // new integer set to zero
+var n=new Tpa('3 1/3');
+console.log(n.toString()); // Outputs '3.[3]'
+&lt;/script></code></pre><h5>Development:</h5><p>Test:<br><code>npm test</code></p>
+<p>Review Coverage (upon successful test):<br><code>npm run coverage</code></p>
+<p>Lint (to ensure no <code>eslint</code> issues):<br><code>npm run lint</code></p>
+<p>Build minified version for browser into lib/tpa.min.js:<br><code>npm run build</code></p>
+<h3>A note about performance</h3><p>Measuring javascript performance is notoriously tricky. There are lots of variables; Your computer and operating system, how you set the test up and your  browser or javascript run-time environment which differ enormously in their treatment of different features of the language. You also need to compare with other libraries that do similar things. But again, such comparisons can be hugely misleading as the context when calling certain functions can be critical. I have set up various tests with other libraries and compared them to other peoples tests - you can get very varying results, sometimes in your favour other times not!</p>
+<p>After a lot of comparative testing with half a dozen of the other main &quot;big number&quot; libraries I have reached a point where I feel the performance is competitive in the right circumstances while properly maintaining the features as summarised earlier.</p>
+<p>For example, I have not tried to make the &quot;toString()&quot; method lightening fast - how many times do you really need to print out a human readable form of a 2,000 digit number? More important is that I can print out fractions and recurring decimals.</p>
+<p>Another example; the method a.add(b) is between 4 and 10 times faster (depending on browser!) than the method Tpa.add(a,b) for a 200 digit number. Why is this? It is because the overhead in creating a new object instance is highly significant (as happens in the latter case). Many other libraries make their objects immutable which means they have focussed on reducing object creation time. I have focussed on actual calculation time. Besides, calling a method on an object is generally expected to change that object (for some other libraries calling x.add(y) does not change x but returns x+y as a new number). In fact, it is arguable that manipulating <em>existing</em> numbers is the more usual case. So my library is <em>very</em> fast at performing calculations on existing numbers but comparatively slow in creating new numbers.</p>
+<p>I've also focussed on ensuring performance is good for large rather than small numbers. If your numbers are within the precision of a javascript floating point number then don't use this library!</p>
+<p>In summary, if you want consistent, cross-browser performance then this library is, on the whole, faster than the rest of them so long as you:</p>
+<ul>
+<li>use the instance methods (<code>x.add(y)</code>, not <code>Tpa.add(x,y)</code>)</li>
+<li>use it on numbers with lots of significant digits.  </li>
+</ul>
+<h3>Usage</h3><h4>Set up</h4><pre class="prettyprint source lang-javascript"><code>var n1=new Tpa();                // new integer set to zero
 var n2=new Tpa(123);             // new integer set to 123
 var n3=new Tpa(213.5);           // new fraction set to 123.5
 var n4=new Tpa('123');           // new integer set to 123
@@ -192,28 +211,6 @@ console.log(Tpa.modulus(a,b).value());        // 5
 console.log(Tpa.frac(b).value());         // 0.5
 console.log(Tpa.int(b).value());          // 12
 console.log(Tpa.abs(-23).value());        // 23</code></pre><p>Note that for methods that take two arguments the first one dictates whether the result is integer or fractional. Thus the subtraction of 12.5 from 5 yields 7 as the operation is only working on integer parts. As opposed to the division that takes the type of b which is fractional.</p>
-<h5>Addition &amp; subtraction</h5><ul>
-<li>Around 5 million per second for either number &lt; 500 digits</li>
-<li>Around 1 million per second for both numbers in the region of 1,000 digits</li>
-<li>Around 150 thousand per second for both numbers in the region of 10,000 digits</li>
-</ul>
-<h5>Multiplication</h5><ul>
-<li>Around 10 million per second for small numbers (&lt;10 digits)</li>
-<li>Around 1 million per second for both numbers in the region of 25 digits</li>
-<li>Around 1/2 million per second for both numbers in the region of 100 digits</li>
-<li>Around 10 thousand per second for both numbers in the region of 1,000 digits</li>
-<li>Around 150 per second for both numbers in the region of 10,000 digits</li>
-</ul>
-<h5>Division</h5><ul>
-<li>Around 2-3 million per second for both numbers &lt; 25 digits</li>
-<li>Around 1 million per second for both numbers in &lt; 100 digits</li>
-<li>Around 300 thousand per second dividing 1,000 digit numbers by &lt;8 digit numbers</li>
-<li>Around 40 thousand per second dividing 10,000 digit numbers by &lt;8 digit numbers</li>
-<li>Around 15 thousand per second for dividing 1,000 digit numbers by 100 digit numbers</li>
-<li>Around 1 thousand per second for dividing 10,000 digit numbers by 100 digit numbers</li>
-<li>Around 250 per second for dividing 10,000 digit numbers by 1,000 digit numbers</li>
-</ul>
-<p>See <code>performance.txt</code> for full details of a test that compared this library (referred to as <code>Dom</code>) with two others (referred to <code>Alex</code> and <code>Mike</code>).</p>
 <h3>Method index</h3><p>Construction and mutators take numbers as parameters in the following forms:</p>
 <ol>
 <li>Tpa object</li>
@@ -291,6 +288,107 @@ x.divide(y);             // Returns x having been divided by y, only y remains u
 
 <header>
     
+        <h2>N.js</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>The helper class to store large integers for Total Precision Arithmetic</p></div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Dominic Thwaites</li>
+        </ul>
+    </dd>
+    
+
+    
+    <dt class="tag-copyright">Copyright:</dt>
+    <dd class="tag-copyright"><ul class="dummy"><li>(c) 2016 Dominic Thwaites dominicthwaites@mac.com</li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="N.js.html">N.js</a>, <a href="N.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
         <h2>tpa.js</h2>
         
     
@@ -308,9 +406,6 @@ x.divide(y);             // Returns x having been divided by y, only y remains u
 
 <dl class="details">
 
-    
-    <dt class="tag-version">Version:</dt>
-    <dd class="tag-version"><ul class="dummy"><li>1.0.6</li></ul></dd>
     
 
     
@@ -397,7 +492,7 @@ x.divide(y);             // Returns x having been divided by y, only y remains u
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Apr 05 2016 09:22:15 GMT+0100 (BST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Apr 07 2016 10:49:12 GMT+0100 (BST)
 </footer>
 
 <script> prettyPrint(); </script>
