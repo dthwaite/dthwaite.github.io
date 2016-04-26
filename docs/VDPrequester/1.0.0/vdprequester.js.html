@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>VDPrequester Source: vdprequester.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">VDPrequester</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="module-VDPrequester.html">VDPrequester</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="module-VDPrequester-VDPrequester.html">VDPrequester~VDPrequester</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+		<div class="col-sm-3 col-md-3">
+            <form class="navbar-form" role="search">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: vdprequester.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/**
+ * @file Job request functionality for connection to Volunteer Distributed Processing
+ * @author Dominic Thwaites
+ * @copyright (c) 2016 Dominic Thwaites dominicthwaites@mac.com
+ * @licence MIT
+ * @module VDPrequester
+ */
+module.exports=(/** @lends module:VDPrequester*/function() {
+    /**
+     * The maximum number of connections that can be made - set to 25.
+     * Note that connections for completed jobs are re-used and thus new connections are only made as jobs are requested in parallel.
+     * @type {number}
+     * @const
+     */
+    var MAX_CONNECTIONS=25;
+
+    /**
+     * Callback function template given when sending a job
+     *
+     * @callback requestCallback
+     * @param {string} errorMessage Error message or null if no error
+     * @param {(string|Blob|BufferArray)} resultData The data return from the job
+     * @see VDPrequester#send
+     */
+
+    /**
+     * Class from which any and all cloud jobs are sent to a particular server.
+     *
+     * Note that connections to the server are only made upon job submission. Thus a bad server
+     * address given here will not be immediately apparent.
+     *
+     * @param {string} address The URL complete with port number that is a VDP server (ws:// ...)
+     * @throws {Error} if the address is not a websocket address
+     * @constructor
+     */
+    var VDPrequester=function(address) {
+        if (typeof address=='string' &amp;&amp; address.substr(0,5)=='ws://') {
+            this.url = address;    // server URL
+            this.libraries = {};   // VDPrequester holds a set of connections per library name
+        } else throw new Error('Invalid server address');
+    };
+
+    /**
+     * @returns {number} The number of connections open to the VDP server (max 25)
+     */
+    VDPrequester.prototype.connectionCount=function() {
+        var count=0;
+        for (var library in this.libraries) {
+            count+=this.libraries[library].length;
+        }
+        return count;
+    };
+
+    /**
+     * Sends a new job into the cloud.
+     *
+     * Generally, this is a fire and forget operation. There is no telling how long the job will take or when and who
+     * will run the job. If you don't care (unlikely) then you need not provide a callback. But a callback is recommended
+     * as it can tell about failures as well as the data results of the job.
+     *
+     * The library must be a valid name taken from the VDP repository.
+     *
+     * @param {string} library Name of the execution library to invoke
+     * @param {string | Blob | bufferArray} data Input data to the library function
+     * @param {requestCallback} [callback] Function called on completion of the job (passing error and result data as a parameter)
+     */
+    VDPrequester.prototype.send=function(library,data, callback) {
+        if (typeof callback!='function') callback=function() {};
+        this._send(new Request(library,data, callback,this));
+    };
+
+    /**
+     * Cancels all outstanding job requests and closes all server connections.
+     *
+     * This can be used to clean up connections. Requests that have yet to complete are 'forgotten'
+     * and thus no response will ever come back. However, those jobs are not cancelled and may or may not
+     * complete in the cloud. This request object continues to be operative, however, allowing new requests
+     * (and thus new connections) to be made to the server.
+     */
+    VDPrequester.prototype.disconnect=function() {
+        for (var library in this.libraries) {
+            var list=this.libraries[library].slice();
+            for (var i=0; i&lt;list.length; i++) {
+                list[i].available=true;
+                list[i].close();
+            }
+        }
+    };
+
+    // Sends one request to the server over a spare connection or a new one if necessary
+    VDPrequester.prototype._send=function(request) {
+        if (!(request.library in this.libraries)) this.libraries[request.library]=[];
+        var list=this.libraries[request.library];
+        for (var i = 0; i &lt; list.length; i++) {
+            if (list[i].available) {
+                request.resetSocket(list[i]).send(request.data);
+                return;
+            }
+        }
+        if (this.connectionCount()>=MAX_CONNECTIONS) {
+            request.callback('Maximum connection count reached');
+        }
+        try {
+            list[i] = request.resetSocket(new WebSocket(this.url, 'R' + request.library));
+            list[i].onopen = function() {
+                list[i].send(request.data);
+            };
+        } catch (error) {
+            request.callback('Connection to server refused');
+        }
+    };
+
+    // Represents one job request
+    var Request=function(library,data, callback,vdprequester) {
+        this.library=library;
+        this.data = data;
+        this.vdprequester = vdprequester;
+        this.callback = callback;
+        this.errors=0;
+    };
+
+    // Sets the socket's callbacks in the context of this request
+    Request.prototype.resetSocket=function(socket) {
+        socket.available=false;
+        var me=this;
+
+        socket.onclose=function() {
+            var list=me.vdprequester.libraries[me.library];
+            // Remove this socket from our store
+            list.splice(list.indexOf(socket),1);
+
+            // Resend if we never got a response
+            if (me.errors>0) {
+                if (me.errors>12) me.callback('Server consistently unavailable');
+                else {
+                    setTimeout(function() {
+                        me.vdprequester._send(me);
+                    }, 5000);
+                }
+            } else {
+                // Server purposefully closed this connection - meaning that
+                // the message sent was not acceptable
+                if (!socket.available) me.callback('Server closed your connection');
+            }
+        };
+        socket.onmessage=function(event) {
+            // flag as complete and send the data to the user
+            socket.available = true;
+            me.callback(null,event.data);
+        };
+        socket.onerror=function() {
+            me.errors++;
+        };
+        return socket;
+    };
+
+    return VDPrequester;
+})();
+</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+<div class="modal fade" id="searchResults">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Search results</h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+
+<footer>
+
+
+	<span class="copyright">
+	Copyright (c) 2016 Dominic Thwaites <dominicthwaites@mac.com>
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
+	
+		on Tue Apr 26th 2016
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+<script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			var id = $( heading ).attr( "id" );
+			return id && id.replace(/\~/g, '-inner-').replace(/\./g, '-static-') || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		SearcherDisplay.init();
+	});
+</script>
+
+</body>
+</html>

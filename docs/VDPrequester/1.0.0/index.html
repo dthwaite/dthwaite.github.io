@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>VDPrequester Index</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">VDPrequester</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="module-VDPrequester.html">VDPrequester</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="module-VDPrequester-VDPrequester.html">VDPrequester~VDPrequester</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+		<div class="col-sm-3 col-md-3">
+            <form class="navbar-form" role="search">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	
+	
+
+
+
+    <h3>VDPrequester 1.0.0</h3>
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+    <section class="readme-section">
+        <article><h2>VDPrequester</h2><p><a href="https://gitter.im/dthwaite/VDPrequester?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/dthwaite/VDP.svg" alt="Join the chat at https://gitter.im/dthwaite/VDPrequester"></a></p>
+<p><a href="https://www.npmjs.com/package/VDPrequester"><img src="https://img.shields.io/npm/v/npm.svg" alt="npm"></a><br><a href="http://travis-ci.org/dthwaite/VDPrequester"><img src="https://secure.travis-ci.org/dthwaite/TPA.png" alt="Build Status"></a><br><a href="https://coveralls.io/github/dthwaite/VDPrequester?branch=master"><img src="https://coveralls.io/repos/github/dthwaite/VDPrequester/badge.svg?branch=master" alt="Coverage Status"></a><br><a href="https://www.bithound.io/github/dthwaite/VDPrequester"><img src="https://www.bithound.io/github/dthwaite/VDPrequester/badges/score.svg" alt="bitHound Overall Score"></a><br><a href="https://www.bithound.io/github/dthwaite/VDPrequester"><img src="https://www.bithound.io/github/dthwaite/VDPrequester/badges/code.svg" alt="bitHound Code"></a></p>
+<h5>Requests jobs to be run in the cloud on volunteer computers</h5><p>Available on <a href="https://github.com/dthwaite/VDPrequester">GitHub</a>, details on <a href="http://dthwaite.github.io/docs/VDPrequester/1.0.0">JSDocs</a>.</p>
+<p>This is a very simple library that allows you to submit jobs into my experimental Volunteer Distributed Processing (VDP) network.<br>It is specific to this network and has no generic applicability.</p>
+<h5>Node.js:</h5><p>To install it:<br><code>npm install VDPrequester</code></p>
+<p>To see how to use it:<br><code>npm docs</code></p>
+<p>To code with it:</p>
+<pre class="prettyprint source lang-javascript"><code>var vdprequester=new VDPrequester('ws://127.0.0.1:8080');
+
+var square=21;
+vdprequester.send(square,'squareroot',function(error,result) {
+    'The square root of '+square+' is '+result.data;
+});</code></pre><h5>Browser:</h5><p>To install it:</p>
+<ul>
+<li>Download <a href="https://github.com/dthwaite/VDPrequester/tree/master/lib/VDPrequester.min.js">vdprequester.min.js</a> from GitHub or use their CDN for my latest version: <a href="https://cdn.rawgit.com/dthwaite/VDPrequester/v1.0.0/lib/vdprequester.min.js">v1.0.0</a></li>
+<li><code>vdprequester.min.js</code> is a UMD (Universal Module Definition) bundle with an export name of <code>VDPrequester</code></li>
+</ul>
+<p>To code with it:</p>
+<pre class="prettyprint source lang-javascript"><code>&lt;script>
+var vdprequester=new VDPrequester('ws://127.0.0.1:8080');
+
+var square=21;
+vdprequester.send(square,'squareroot',function(error,result) {
+    'The square root of '+square+' is '+result.data;
+});
+&lt;/script></code></pre><h5>Development:</h5><p>Lint (to ensure no <code>eslint</code> issues):<br><code>npm run lint</code></p>
+<p>Build minified version for browser into lib/vdprequester.min.js:<br><code>npm run build-prod</code></p>
+<p>Build and run test for browser testing and debugging:<br><code>npm test</code></p>
+<p>Build and run test with coverage:<br><code>npm run test-coverage</code></p>
+<p>Review coverage:<br><code>npm run view-coverage</code> (after <code>npm-run test-coverage</code>)</p></article>
+    </section>
+
+
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
+</div>
+
+<div class="modal fade" id="searchResults">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Search results</h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+
+<footer>
+
+
+	<span class="copyright">
+	Copyright (c) 2016 Dominic Thwaites <dominicthwaites@mac.com>
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
+	
+		on Tue Apr 26th 2016
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+<script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			var id = $( heading ).attr( "id" );
+			return id && id.replace(/\~/g, '-inner-').replace(/\./g, '-static-') || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		SearcherDisplay.init();
+	});
+</script>
+
+</body>
+</html>
